@@ -1047,7 +1047,7 @@ def login_sidebar():
         if st.session_state.get("role") == "admin":
             st.sidebar.divider()
             st.sidebar.caption(f"Database location: `{DB_PATH}`")
-        return True
+        return False
     
     # Only show login form if not logged in
     st.sidebar.subheader("Login")
@@ -1065,7 +1065,7 @@ def login_sidebar():
         else:
             st.sidebar.error("Invalid credentials")
     
-    return False
+    return True
     # Main App
 def main():
     st.set_page_config(
