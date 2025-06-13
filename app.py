@@ -1041,15 +1041,15 @@ def manage_users():
 def login_sidebar():
     st.sidebar.title("Fleet Management System")
     
-    # In login_sidebar() after successful login
     if st.session_state.get("logged_in"):
         st.sidebar.subheader(f"Welcome, {st.session_state.username}")
         st.sidebar.write(f"Role: {st.session_state.get('role', 'user')}")
         if st.session_state.get("role") == "admin":
             st.sidebar.divider()
             st.sidebar.caption(f"Database location: `{DB_PATH}`")
-    return True
+        return True
     
+    # Only show login form if not logged in
     st.sidebar.subheader("Login")
     username = st.sidebar.text_input("Username")
     password = st.sidebar.text_input("Password", type="password")
@@ -1066,15 +1066,6 @@ def login_sidebar():
             st.sidebar.error("Invalid credentials")
     
     return False
-        
-    # Initialize session state
-    if 'logged_in' not in st.session_state:
-        st.session_state.logged_in = False
-    
-    # Check login status
-    if not login_sidebar():
-        st.warning("Please login from the sidebar")
-        return
     # Main App
 def main():
     st.set_page_config(
@@ -1083,6 +1074,24 @@ def main():
         layout="wide",
         initial_sidebar_state="expanded"
     )
+    # Add at top after imports
+    st.markdown("""
+    <style>
+    @media (max-width: 768px) {
+        .block-container {
+            padding: 1rem !important;
+        }
+        .stDataFrame {
+            width: 100% !important;
+        }
+        .column-css {
+            flex-direction: column !important;
+        }
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+
     # Navigation
     nav_options = [
         "Dashboard",
