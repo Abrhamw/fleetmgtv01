@@ -1091,7 +1091,7 @@ def login_sidebar():
     # Check login status
     if not login_sidebar():
         st.warning("Please login from the sidebar")
-        return
+    return
     # Main App
 def main():
     st.set_page_config(
