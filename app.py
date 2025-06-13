@@ -854,7 +854,7 @@ def realtime_gps_tracking():
     
     # Update button
     if st.button("Refresh Locations"):
-        st.experimental_rerun()
+        st.rerun()
     
     # Display table
     st.subheader("Assignment Details")
@@ -1026,7 +1026,7 @@ def login_sidebar():
             st.session_state.username = username
             st.session_state.role = get_user_role(username)
             st.sidebar.success("Logged in successfully!")
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.sidebar.error("Invalid credentials")
     
@@ -1066,7 +1066,7 @@ def login_sidebar():
         st.session_state.logged_in = False
         st.session_state.pop("username", None)
         st.session_state.pop("role", None)
-        st.experimental_rerun()
+        st.rerun()
     
     # Page routing
     if app_mode == "Dashboard":
@@ -1091,7 +1091,7 @@ def login_sidebar():
         manage_users()
     elif app_mode == "Logout":
         st.session_state.logged_in = False
-        st.experimental_rerun()
+        st.rerun()
 
 if __name__ == "__main__":
     main()
