@@ -14,8 +14,9 @@ from streamlit_folium import folium_static
 import time
 
 # Get current directory
-current_dir = pathlib.Path(__file__).parent.resolve()
-DB_PATH = current_dir / 'fleet.db'
+DATA_DIR = st.session_state.get("data_dir", os.path.join(os.getcwd(), "data"))
+os.makedirs(DATA_DIR, exist_ok=True)
+DB_PATH = os.path.join(DATA_DIR, 'fleet.db')
 
 # Database setup
 def initialize_database():
