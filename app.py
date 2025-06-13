@@ -12,7 +12,22 @@ from io import BytesIO
 import folium
 from streamlit_folium import folium_static
 import time
-
+# Add at top after imports
+st.markdown("""
+<style>
+@media (max-width: 768px) {
+    .block-container {
+        padding: 1rem !important;
+    }
+    .stDataFrame {
+        width: 100% !important;
+    }
+    .column-css {
+        flex-direction: column !important;
+    }
+}
+</style>
+""", unsafe_allow_html=True)
 # Get current directory
 DATA_DIR = st.session_state.get("data_dir", os.path.join(os.getcwd(), "data"))
 os.makedirs(DATA_DIR, exist_ok=True)
@@ -96,6 +111,16 @@ def initialize_database():
         password TEXT NOT NULL,
         role TEXT DEFAULT 'user'
     )''')
+
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS change_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL,
+        change_type TEXT NOT NULL,
+        table_name TEXT NOT NULL,
+        record_id TEXT NOT NULL,
+        change_time TEXT NOT NULL
+    )''')
     
     # Create default admin user if doesn't exist
     hashed = hashlib.sha256('admin123'.encode()).hexdigest()
@@ -153,6 +178,35 @@ def get_user_role(username):
     result = cursor.fetchone()
     conn.close()
     return result[0] if result else None
+def view_change_log():
+    st.title("Change Log")
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        log = pd.read_sql("SELECT * FROM change_log ORDER BY change_time DESC", conn)
+        conn.close()
+        
+        if not log.empty:
+            st.dataframe(log)
+        else:
+            st.info("No changes logged yet")
+    except Exception as e:
+        st.error(f"Database error: {str(e)}")
+# New function to log changes
+def log_change(change_type, table_name, record_id):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT INTO change_log (username, change_type, table_name, record_id, change_time)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (
+        st.session_state.username,
+        change_type,
+        table_name,
+        str(record_id),
+        datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    ))
+    conn.commit()
+    conn.close()
 
 # Dashboard functions
 def get_dashboard_counts():
@@ -283,6 +337,7 @@ def manage_vehicles():
                             loading_capacity, assigned_for
                         ))
                         conn.commit()
+                        log_change("INSERT", "vehicle", plate)
                         st.success("Vehicle added successfully!")
                     except sqlite3.IntegrityError:
                         st.error("Plate number or chasis already exists!")
@@ -1002,9 +1057,13 @@ def manage_users():
 def login_sidebar():
     st.sidebar.title("Fleet Management System")
     
+    # In login_sidebar() after successful login
     if st.session_state.get("logged_in"):
         st.sidebar.subheader(f"Welcome, {st.session_state.username}")
         st.sidebar.write(f"Role: {st.session_state.get('role', 'user')}")
+        if st.session_state.get("role") == "admin":
+            st.sidebar.divider()
+            st.sidebar.caption(f"Database location: `{DB_PATH}`")
         return True
     
     st.sidebar.subheader("Login")
@@ -1055,6 +1114,7 @@ def main():
     ]
     
     if st.session_state.get("role") == "admin":
+        nav_options.append("Change Log")
         nav_options.append("User Management")
     
     nav_options.append("Logout")
@@ -1089,6 +1149,8 @@ def main():
         vehicle_driver_summary()
     elif app_mode == "User Management":
         manage_users()
+    elif app_mode == "Change Log":
+        view_change_log()
     elif app_mode == "Logout":
         st.session_state.logged_in = False
         st.rerun()
