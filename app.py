@@ -14,10 +14,26 @@ from streamlit_folium import folium_static
 import time
 
 # Get current directory
-DATA_DIR = st.session_state.get("data_dir", os.path.join(os.getcwd(), "data"))
-os.makedirs(DATA_DIR, exist_ok=True)
-DB_PATH = os.path.join(DATA_DIR, 'fleet.db')
+#DATA_DIR = st.session_state.get("data_dir", os.path.join(os.getcwd(), "data"))
+#os.makedirs(DATA_DIR, exist_ok=True)
+#DB_PATH = os.path.join(DATA_DIR, 'fleet.db')
+DB_PATH = "fleet.db"  # Store in root directory
 
+def save_db_to_github():
+    """Commit and push database to GitHub"""
+    if st.secrets.has_key("GITHUB_TOKEN"):
+        try:
+            repo = git.Repo(".")
+            repo.git.add(DB_PATH)
+            repo.index.commit(f"Auto-update database {datetime.now()}")
+            origin = repo.remote(name="origin")
+            origin.push()
+            st.success("Database saved to GitHub")
+        except Exception as e:
+            st.error(f"Error saving to GitHub: {str(e)}")
+
+# Call this after critical operations
+save_db_to_github()
 # Database setup
 def initialize_database():
     """Create database tables if they don't exist"""
