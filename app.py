@@ -1073,7 +1073,7 @@ def login_sidebar():
         if st.session_state.get("role") == "admin":
             st.sidebar.divider()
             st.sidebar.caption(f"Database location: `{DB_PATH}`")
-        return True
+    return True
     
     st.sidebar.subheader("Login")
     username = st.sidebar.text_input("Username")
