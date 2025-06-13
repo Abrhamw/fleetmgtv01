@@ -12,23 +12,6 @@ from io import BytesIO
 import folium
 from streamlit_folium import folium_static
 import time
-# Add at top after imports
-st.markdown("""
-<style>
-@media (max-width: 768px) {
-    .block-container {
-        padding: 1rem !important;
-    }
-    .stDataFrame {
-        width: 100% !important;
-    }
-    .column-css {
-        flex-direction: column !important;
-    }
-}
-</style>
-""", unsafe_allow_html=True)
-
 
 # Get current directory
 DATA_DIR = st.session_state.get("data_dir", os.path.join(os.getcwd(), "data"))
