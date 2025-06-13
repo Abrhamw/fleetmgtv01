@@ -468,7 +468,15 @@ def manage_assignments():
             st.info("No active assignments found")
     except Exception as e:
         st.error(f"Database error: {str(e)}")
-
+    # In manage_assignments() function
+    gps_position = st.text_input("GPS Position (lat,lon)")
+    if gps_position:
+        try:
+            lat, lon = map(float, gps_position.split(','))
+            if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
+                st.error("Invalid GPS coordinates. Latitude must be between -90 and 90, Longitude between -180 and 180")
+        except ValueError:
+            st.error("Invalid GPS format. Use 'latitude,longitude' (e.g., 9.145,40.4897)")
 # Compliance Management
 def manage_compliance():
     st.title("Compliance Management")
@@ -528,7 +536,9 @@ def manage_compliance():
                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                     ''', (
                         plate_number, insurance_type, insurance_date.strftime('%Y-%m-%d'), 
-                        yearly_inspection, inspection_date.strftime('%Y-%m%d'), 
+                        # Change this line in the INSERT operation:
+                          # Was '%Y-%m%d' which is incorrect
+                        yearly_inspection, inspection_date.strftime('%Y-%m-%d'), 
                         safety_audit, utilization_history, accident_history
                     ))
                 else:
