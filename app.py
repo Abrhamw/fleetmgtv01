@@ -35,14 +35,6 @@ DATA_DIR = st.session_state.get("data_dir", os.path.join(os.getcwd(), "data"))
 os.makedirs(DATA_DIR, exist_ok=True)
 DB_PATH = os.path.join(DATA_DIR, 'fleet.db')
 
-# Main App
-def main():
-    st.set_page_config(
-        page_title="Fleet Management System",
-        page_icon="🚚",
-        layout="wide",
-        initial_sidebar_state="expanded"
-    )
 # Database setup
 def initialize_database():
     """Create database tables if they don't exist"""
@@ -1100,7 +1092,14 @@ def login_sidebar():
     if not login_sidebar():
         st.warning("Please login from the sidebar")
         return
-    
+    # Main App
+def main():
+    st.set_page_config(
+        page_title="Fleet Management System",
+        page_icon="🚚",
+        layout="wide",
+        initial_sidebar_state="expanded"
+    )
     # Navigation
     nav_options = [
         "Dashboard",
