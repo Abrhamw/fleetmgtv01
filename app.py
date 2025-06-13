@@ -13,6 +13,15 @@ import folium
 from streamlit_folium import folium_static
 import time
 
+# Main App
+def main():
+    st.set_page_config(
+        page_title="Fleet Management System",
+        page_icon="🚚",
+        layout="wide",
+        initial_sidebar_state="expanded"
+    )
+
 # Get current directory
 DATA_DIR = st.session_state.get("data_dir", os.path.join(os.getcwd(), "data"))
 os.makedirs(DATA_DIR, exist_ok=True)
@@ -1022,16 +1031,7 @@ def login_sidebar():
             st.sidebar.error("Invalid credentials")
     
     return False
-
-# Main App
-def main():
-    st.set_page_config(
-        page_title="Fleet Management System",
-        page_icon="🚚",
-        layout="wide",
-        initial_sidebar_state="expanded"
-    )
-    
+   
     # Initialize session state
     if 'logged_in' not in st.session_state:
         st.session_state.logged_in = False
