@@ -1095,23 +1095,69 @@ def main():
         layout="wide",
         initial_sidebar_state="expanded"
     )
-    
-    # Add CSS after page config
-    st.markdown("""
-    <style>
-    @media (max-width: 768px) {
-        .block-container {
-            padding: 1rem !important;
-        }
-        .stDataFrame {
-            width: 100% !important;
-        }
-        .column-css {
-            flex-direction: column !important;
-        }
+        # Detect mobile devices
+    user_agent = st.server_request_headers().get("User-Agent", "").lower()
+    st.session_state.is_mobile = any(keyword in user_agent for keyword in ["mobile", "android", "iphone"])
+   # Replace the existing CSS with this enhanced version
+st.markdown("""
+<style>
+/* Mobile-first responsive design */
+@media (max-width: 768px) {
+    .block-container {
+        padding: 0.5rem !important;
     }
-    </style>
-    """, unsafe_allow_html=True)
+    .stDataFrame {
+        width: 100% !important;
+        font-size: 12px !important;
+    }
+    .stForm {
+        padding: 0.5rem !important;
+    }
+    .stTextInput, .stSelectbox, .stNumberInput, .stDateInput, .stTextArea {
+        width: 100% !important;
+        margin-bottom: 0.5rem !important;
+    }
+    .column-css {
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+    }
+    /* Hide some non-essential elements on mobile */
+    .mobile-hidden {
+        display: none !important;
+    }
+    /* Make buttons full width */
+    .stButton>button {
+        width: 100% !important;
+    }
+    /* Adjust metric display */
+    .stMetric {
+        padding: 0.5rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+}
+/* Desktop specific adjustments */
+@media (min-width: 769px) {
+    .desktop-only {
+        display: block !important;
+    }
+    .mobile-only {
+        display: none !important;
+    }
+    /* Limit form width on desktop */
+    .stForm {
+        max-width: 800px !important;
+    }
+}
+/* General improvements */
+.stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
+    margin-top: 0.5rem !important;
+    margin-bottom: 0.5rem !important;
+}
+.stDataFrame {
+    overflow-x: auto;
+}
+</style>
+""", unsafe_allow_html=True)
 
     # Check login status
     if not login_sidebar():
