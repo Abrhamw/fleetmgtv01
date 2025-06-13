@@ -1040,14 +1040,18 @@ def manage_users():
 def login_sidebar():
     st.sidebar.title("Fleet Management System")
     
-    # Check if user is already logged in
-    if st.session_state.get("logged_in"):
+    # Initialize session state if not exists
+    if 'logged_in' not in st.session_state:
+        st.session_state.logged_in = False
+    
+    # If user is logged in, show welcome message
+    if st.session_state.logged_in:
         st.sidebar.subheader(f"Welcome, {st.session_state.username}")
         st.sidebar.write(f"Role: {st.session_state.get('role', 'user')}")
         if st.session_state.get("role") == "admin":
             st.sidebar.divider()
             st.sidebar.caption(f"Database location: `{DB_PATH}`")
-        return False
+        return True
     
     # Only show login form if not logged in
     st.sidebar.subheader("Login")
@@ -1061,20 +1065,22 @@ def login_sidebar():
             st.session_state.username = username
             st.session_state.role = get_user_role(username)
             st.sidebar.success("Logged in successfully!")
-            st.rerun()
+            st.experimental_rerun()  # Use experimental_rerun for better reliability
         else:
             st.sidebar.error("Invalid credentials")
     
-    return True
+    return False
     # Main App
 def main():
+    # MUST BE FIRST: Set page config before any other Streamlit commands
     st.set_page_config(
         page_title="Fleet Management System",
         page_icon="🚚",
         layout="wide",
         initial_sidebar_state="expanded"
     )
-    # Add at top after imports
+    
+    # Add CSS after page config
     st.markdown("""
     <style>
     @media (max-width: 768px) {
@@ -1091,7 +1097,10 @@ def main():
     </style>
     """, unsafe_allow_html=True)
 
-
+    # Check login status
+    if not login_sidebar():
+        st.warning("Please login from the sidebar")
+        return
     # Navigation
     nav_options = [
         "Dashboard",
