@@ -1065,7 +1065,7 @@ def login_sidebar():
             st.session_state.username = username
             st.session_state.role = get_user_role(username)
             st.sidebar.success("Logged in successfully!")
-            st.experimental_rerun()  # Use experimental_rerun for better reliability
+            st.rerun()  # Use experimental_rerun for better reliability
         else:
             st.sidebar.error("Invalid credentials")
     
