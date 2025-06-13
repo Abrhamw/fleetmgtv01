@@ -1037,10 +1037,10 @@ def manage_users():
     except Exception as e:
         st.error(f"Database error: {str(e)}")
 
-# Authentication UI
 def login_sidebar():
     st.sidebar.title("Fleet Management System")
     
+    # Check if user is already logged in
     if st.session_state.get("logged_in"):
         st.sidebar.subheader(f"Welcome, {st.session_state.username}")
         st.sidebar.write(f"Role: {st.session_state.get('role', 'user')}")
