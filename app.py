@@ -28,12 +28,21 @@ st.markdown("""
 }
 </style>
 """, unsafe_allow_html=True)
+
+
 # Get current directory
 DATA_DIR = st.session_state.get("data_dir", os.path.join(os.getcwd(), "data"))
 os.makedirs(DATA_DIR, exist_ok=True)
 DB_PATH = os.path.join(DATA_DIR, 'fleet.db')
 
-
+# Main App
+def main():
+    st.set_page_config(
+        page_title="Fleet Management System",
+        page_icon="🚚",
+        layout="wide",
+        initial_sidebar_state="expanded"
+    )
 # Database setup
 def initialize_database():
     """Create database tables if they don't exist"""
@@ -1082,14 +1091,6 @@ def login_sidebar():
             st.sidebar.error("Invalid credentials")
     
     return False
-# Main App
-def main():
-    st.set_page_config(
-        page_title="Fleet Management System",
-        page_icon="🚚",
-        layout="wide",
-        initial_sidebar_state="expanded"
-    )
         
     # Initialize session state
     if 'logged_in' not in st.session_state:
