@@ -21,7 +21,7 @@ DB_PATH = "fleet.db"  # Store in root directory
 
 def save_db_to_github():
     """Commit and push database to GitHub"""
-    if st.secrets.has_key("GITHUB_TOKEN"):
+    if st.secrets.has_key("abrhamw_nomore"):
         try:
             repo = git.Repo(".")
             repo.git.add(DB_PATH)
