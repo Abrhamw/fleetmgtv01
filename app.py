@@ -1194,29 +1194,29 @@ if st.sidebar.button("Logout"):
     # Page routing
 if app_mode == "Dashboard":
     show_dashboard()
-   elif app_mode == "Manage Vehicles":
-       manage_vehicles()
-   elif app_mode == "Manage Drivers":
-       manage_drivers()
-   elif app_mode == "Manage Assignments":
-       manage_assignments()
-   elif app_mode == "Manage Compliance":
-       manage_compliance()
-   elif app_mode == "Manage Maintenance":
-       manage_maintenance()
-   elif app_mode == "Reports":
-       generate_reports()
-   elif app_mode == "GPS Tracking":
-       realtime_gps_tracking()
-   elif app_mode == "Summary Lookup":
-       vehicle_driver_summary()
-   elif app_mode == "User Management":
-       manage_users()
-   elif app_mode == "Change Log":
-       view_change_log()
-   elif app_mode == "Logout":
-       st.session_state.logged_in = False
-       st.rerun()
+elif app_mode == "Manage Vehicles":
+    manage_vehicles()
+elif app_mode == "Manage Drivers":
+    manage_drivers()
+elif app_mode == "Manage Assignments":
+    manage_assignments()
+elif app_mode == "Manage Compliance":
+    manage_compliance()
+elif app_mode == "Manage Maintenance":
+    manage_maintenance()
+elif app_mode == "Reports":
+    generate_reports()
+elif app_mode == "GPS Tracking":
+    realtime_gps_tracking()
+elif app_mode == "Summary Lookup":
+    vehicle_driver_summary()
+elif app_mode == "User Management":
+    manage_users()
+elif app_mode == "Change Log":
+    view_change_log()
+elif app_mode == "Logout":
+    st.session_state.logged_in = False
+    st.rerun()
 
 if __name__ == "__main__":
     main()
