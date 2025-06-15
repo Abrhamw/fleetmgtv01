@@ -1,4 +1,4 @@
-﻿import streamlit as st
+import streamlit as st
 import pandas as pd
 import sqlite3
 import seaborn as sns
@@ -6,35 +6,15 @@ import matplotlib.pyplot as plt
 from datetime import datetime, date, timedelta
 import os
 import hashlib
-import pathlib
 import matplotlib.dates as mdates
 from io import BytesIO
 import folium
 from streamlit_folium import folium_static
 import time
 
-# Get current directory
-#DATA_DIR = st.session_state.get("data_dir", os.path.join(os.getcwd(), "data"))
-#os.makedirs(DATA_DIR, exist_ok=True)
-#DB_PATH = os.path.join(DATA_DIR, 'fleet.db')
+# Database setup
 DB_PATH = "fleet.db"  # Store in root directory
 
-def save_db_to_github():
-    """Commit and push database to GitHub"""
-    if st.secrets.has_key("abrhamw_nomore"):
-        try:
-            repo = git.Repo(".")
-            repo.git.add(DB_PATH)
-            repo.index.commit(f"Auto-update database {datetime.now()}")
-            origin = repo.remote(name="origin")
-            origin.push()
-            st.success("Database saved to GitHub")
-        except Exception as e:
-            st.error(f"Error saving to GitHub: {str(e)}")
-
-# Call this after critical operations
-save_db_to_github()
-# Database setup
 def initialize_database():
     """Create database tables if they don't exist"""
     conn = sqlite3.connect(DB_PATH)
@@ -178,6 +158,7 @@ def get_user_role(username):
     result = cursor.fetchone()
     conn.close()
     return result[0] if result else None
+
 def view_change_log():
     st.title("Change Log")
     try:
@@ -191,6 +172,7 @@ def view_change_log():
             st.info("No changes logged yet")
     except Exception as e:
         st.error(f"Database error: {str(e)}")
+
 # New function to log changes
 def log_change(change_type, table_name, record_id):
     conn = sqlite3.connect(DB_PATH)
@@ -463,6 +445,17 @@ def manage_assignments():
             submitted = st.form_submit_button("Create Assignment")
             if submitted:
                 if plate_number and driver_id and start_date:
+                    # Validate GPS position
+                    if gps_position:
+                        try:
+                            lat, lon = map(float, gps_position.split(','))
+                            if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
+                                st.error("Invalid GPS coordinates. Latitude must be between -90 and 90, Longitude between -180 and 180")
+                                return
+                        except ValueError:
+                            st.error("Invalid GPS format. Use 'latitude,longitude' (e.g., 9.145,40.4897)")
+                            return
+                    
                     try:
                         conn = sqlite3.connect(DB_PATH)
                         cursor = conn.cursor()
@@ -524,15 +517,7 @@ def manage_assignments():
             st.info("No active assignments found")
     except Exception as e:
         st.error(f"Database error: {str(e)}")
-    # In manage_assignments() function
-    gps_position = st.text_input("GPS Position (lat,lon)")
-    if gps_position:
-        try:
-            lat, lon = map(float, gps_position.split(','))
-            if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
-                st.error("Invalid GPS coordinates. Latitude must be between -90 and 90, Longitude between -180 and 180")
-        except ValueError:
-            st.error("Invalid GPS format. Use 'latitude,longitude' (e.g., 9.145,40.4897)")
+
 # Compliance Management
 def manage_compliance():
     st.title("Compliance Management")
@@ -592,8 +577,6 @@ def manage_compliance():
                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                     ''', (
                         plate_number, insurance_type, insurance_date.strftime('%Y-%m-%d'), 
-                        # Change this line in the INSERT operation:
-                          # Was '%Y-%m%d' which is incorrect
                         yearly_inspection, inspection_date.strftime('%Y-%m-%d'), 
                         safety_audit, utilization_history, accident_history
                     ))
@@ -854,7 +837,7 @@ def generate_reports():
         except Exception as e:
             st.error(f"Database error: {str(e)}")
 
-# NEW: Real-time GPS Tracking
+# Real-time GPS Tracking
 def realtime_gps_tracking():
     st.title("Real-time Vehicle Tracking")
     
@@ -866,8 +849,7 @@ def realtime_gps_tracking():
         FROM assignment a
         JOIN vehicle v ON a.plate_number = v.plate_number
         JOIN driver d ON a.driver_id = d.id
-        WHERE a.end_date IS NULL 
-            OR a.end_date >= date('now')
+        WHERE (a.end_date IS NULL OR a.end_date >= date('now'))
             AND a.gps_position IS NOT NULL
     '''
     assignments = pd.read_sql(query, conn)
@@ -907,7 +889,7 @@ def realtime_gps_tracking():
     st.subheader("Assignment Details")
     st.dataframe(assignments[['plate_number', 'driver_name', 'work_place', 'last_update']])
 
-# NEW: One-page summary
+# One-page summary
 def vehicle_driver_summary():
     st.title("Vehicle & Driver Summary")
     
@@ -1014,7 +996,7 @@ def vehicle_driver_summary():
             except Exception as e:
                 st.error(f"Database error: {str(e)}")
 
-# NEW: User management
+# User management
 def manage_users():
     st.title("User Management")
     
@@ -1081,90 +1063,90 @@ def login_sidebar():
             st.session_state.username = username
             st.session_state.role = get_user_role(username)
             st.sidebar.success("Logged in successfully!")
-            st.rerun()  # Use experimental_rerun for better reliability
+            st.rerun()
         else:
             st.sidebar.error("Invalid credentials")
     
     return False
-    # Main App
+
+# Main App
 def main():
-    # MUST BE FIRST: Set page config before any other Streamlit commands
+    # Set page config before any other Streamlit commands
     st.set_page_config(
         page_title="Fleet Management System",
         page_icon="🚚",
         layout="wide",
         initial_sidebar_state="expanded"
     )
-        # Detect mobile devices
-    user_agent = st.server_request_headers().get("User-Agent", "").lower()
-    st.session_state.is_mobile = any(keyword in user_agent for keyword in ["mobile", "android", "iphone"])
-   # Replace the existing CSS with this enhanced version
-st.markdown("""
-<style>
-/* Mobile-first responsive design */
-@media (max-width: 768px) {
-    .block-container {
-        padding: 0.5rem !important;
+    
+    # Add custom CSS for responsive design
+    st.markdown("""
+    <style>
+    /* Mobile-first responsive design */
+    @media (max-width: 768px) {
+        .block-container {
+            padding: 0.5rem !important;
+        }
+        .stDataFrame {
+            width: 100% !important;
+            font-size: 12px !important;
+        }
+        .stForm {
+            padding: 0.5rem !important;
+        }
+        .stTextInput, .stSelectbox, .stNumberInput, .stDateInput, .stTextArea {
+            width: 100% !important;
+            margin-bottom: 0.5rem !important;
+        }
+        .column-css {
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+        }
+        /* Hide some non-essential elements on mobile */
+        .mobile-hidden {
+            display: none !important;
+        }
+        /* Make buttons full width */
+        .stButton>button {
+            width: 100% !important;
+        }
+        /* Adjust metric display */
+        .stMetric {
+            padding: 0.5rem !important;
+            margin-bottom: 0.5rem !important;
+        }
+    }
+    /* Desktop specific adjustments */
+    @media (min-width: 769px) {
+        .desktop-only {
+            display: block !important;
+        }
+        .mobile-only {
+            display: none !important;
+        }
+        /* Limit form width on desktop */
+        .stForm {
+            max-width: 800px !important;
+        }
+    }
+    /* General improvements */
+    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
+        margin-top: 0.5rem !important;
+        margin-bottom: 0.5rem !important;
     }
     .stDataFrame {
-        width: 100% !important;
-        font-size: 12px !important;
+        overflow-x: auto;
     }
-    .stForm {
-        padding: 0.5rem !important;
-    }
-    .stTextInput, .stSelectbox, .stNumberInput, .stDateInput, .stTextArea {
-        width: 100% !important;
-        margin-bottom: 0.5rem !important;
-    }
-    .column-css {
-        flex-direction: column !important;
-        gap: 0.5rem !important;
-    }
-    /* Hide some non-essential elements on mobile */
-    .mobile-hidden {
-        display: none !important;
-    }
-    /* Make buttons full width */
-    .stButton>button {
-        width: 100% !important;
-    }
-    /* Adjust metric display */
-    .stMetric {
-        padding: 0.5rem !important;
-        margin-bottom: 0.5rem !important;
-    }
-}
-/* Desktop specific adjustments */
-@media (min-width: 769px) {
-    .desktop-only {
-        display: block !important;
-    }
-    .mobile-only {
-        display: none !important;
-    }
-    /* Limit form width on desktop */
-    .stForm {
-        max-width: 800px !important;
-    }
-}
-/* General improvements */
-.stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
-    margin-top: 0.5rem !important;
-    margin-bottom: 0.5rem !important;
-}
-.stDataFrame {
-    overflow-x: auto;
-}
-</style>
-""", unsafe_allow_html=True)
+    </style>
+    """, unsafe_allow_html=True)
 
     # Check login status
-if not login_sidebar():
-    st.warning("Please login from the sidebar")
-   return
+    if not login_sidebar():
+        st.warning("Please login from the sidebar")
+        return
+    
     # Navigation
-nav_options = [
+    nav_options = [
         "Dashboard",
         "Manage Vehicles",
         "Manage Drivers",
@@ -1176,47 +1158,47 @@ nav_options = [
         "Summary Lookup",
     ]
     
-if st.session_state.get("role") == "admin":
+    if st.session_state.get("role") == "admin":
         nav_options.append("Change Log")
         nav_options.append("User Management")
     
-nav_options.append("Logout")
+    nav_options.append("Logout")
     
-app_mode = st.sidebar.selectbox("Navigation", nav_options)
+    app_mode = st.sidebar.selectbox("Navigation", nav_options)
     
-st.sidebar.divider()
-if st.sidebar.button("Logout"):
+    st.sidebar.divider()
+    if st.sidebar.button("Logout"):
         st.session_state.logged_in = False
         st.session_state.pop("username", None)
         st.session_state.pop("role", None)
         st.rerun()
     
     # Page routing
-if app_mode == "Dashboard":
-    show_dashboard()
-elif app_mode == "Manage Vehicles":
-    manage_vehicles()
-elif app_mode == "Manage Drivers":
-    manage_drivers()
-elif app_mode == "Manage Assignments":
-    manage_assignments()
-elif app_mode == "Manage Compliance":
-    manage_compliance()
-elif app_mode == "Manage Maintenance":
-    manage_maintenance()
-elif app_mode == "Reports":
-    generate_reports()
-elif app_mode == "GPS Tracking":
-    realtime_gps_tracking()
-elif app_mode == "Summary Lookup":
-    vehicle_driver_summary()
-elif app_mode == "User Management":
-    manage_users()
-elif app_mode == "Change Log":
-    view_change_log()
-elif app_mode == "Logout":
-    st.session_state.logged_in = False
-    st.rerun()
+    if app_mode == "Dashboard":
+        show_dashboard()
+    elif app_mode == "Manage Vehicles":
+        manage_vehicles()
+    elif app_mode == "Manage Drivers":
+        manage_drivers()
+    elif app_mode == "Manage Assignments":
+        manage_assignments()
+    elif app_mode == "Manage Compliance":
+        manage_compliance()
+    elif app_mode == "Manage Maintenance":
+        manage_maintenance()
+    elif app_mode == "Reports":
+        generate_reports()
+    elif app_mode == "GPS Tracking":
+        realtime_gps_tracking()
+    elif app_mode == "Summary Lookup":
+        vehicle_driver_summary()
+    elif app_mode == "User Management":
+        manage_users()
+    elif app_mode == "Change Log":
+        view_change_log()
+    elif app_mode == "Logout":
+        st.session_state.logged_in = False
+        st.rerun()
 
 if __name__ == "__main__":
     main()
