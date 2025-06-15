@@ -1162,7 +1162,7 @@ st.markdown("""
     # Check login status
 if not login_sidebar():
         st.warning("Please login from the sidebar")
-    return
+return
     # Navigation
 nav_options = [
         "Dashboard",
