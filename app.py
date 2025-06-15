@@ -1164,7 +1164,7 @@ if not login_sidebar():
     st.warning("Please login from the sidebar")
     return
     # Navigation
-    nav_options = [
+nav_options = [
         "Dashboard",
         "Manage Vehicles",
         "Manage Drivers",
