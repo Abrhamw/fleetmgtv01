@@ -1185,7 +1185,7 @@ nav_options.append("Logout")
 app_mode = st.sidebar.selectbox("Navigation", nav_options)
     
 st.sidebar.divider()
- if st.sidebar.button("Logout"):
+if st.sidebar.button("Logout"):
         st.session_state.logged_in = False
         st.session_state.pop("username", None)
         st.session_state.pop("role", None)
