@@ -1164,7 +1164,7 @@ if not login_sidebar():
         st.warning("Please login from the sidebar")
         return
     # Navigation
-    nav_options = [
+nav_options = [
         "Dashboard",
         "Manage Vehicles",
         "Manage Drivers",
@@ -1176,23 +1176,23 @@ if not login_sidebar():
         "Summary Lookup",
     ]
     
-    if st.session_state.get("role") == "admin":
+if st.session_state.get("role") == "admin":
         nav_options.append("Change Log")
         nav_options.append("User Management")
     
-    nav_options.append("Logout")
+nav_options.append("Logout")
     
-    app_mode = st.sidebar.selectbox("Navigation", nav_options)
+app_mode = st.sidebar.selectbox("Navigation", nav_options)
     
-    st.sidebar.divider()
-    if st.sidebar.button("Logout"):
+st.sidebar.divider()
+ if st.sidebar.button("Logout"):
         st.session_state.logged_in = False
         st.session_state.pop("username", None)
         st.session_state.pop("role", None)
         st.rerun()
     
     # Page routing
-    if app_mode == "Dashboard":
+if app_mode == "Dashboard":
         show_dashboard()
     elif app_mode == "Manage Vehicles":
         manage_vehicles()
