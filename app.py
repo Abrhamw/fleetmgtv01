@@ -1160,7 +1160,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
     # Check login status
-    if not login_sidebar():
+if not login_sidebar():
         st.warning("Please login from the sidebar")
         return
     # Navigation
